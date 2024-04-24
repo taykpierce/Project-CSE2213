@@ -16,6 +16,7 @@ class Inventory:
             for row in rows:
                 print(f"ISBN: {row[0]}, Title: {row[1]}, Author: {row[2]}, Genre: {row[3]}, Pages: {row[4]}, Release: {row[5]}, Price: ${row[6]}, Stock: {row[7]}")
             cursor.close()
+            
         except sqlite3.Error as e:
             print("Error fetching inventory:", e)
             sys.exit()
