@@ -64,3 +64,33 @@ class Cart:
             sys.exit()
         finally:
             conn.close()
+
+    def checkOut(self, userID):
+        """ Processes the user's cart for checkout, adjusting inventory and clearing the cart. """
+        try:
+            conn = sqlite3.connect(self.database_name)
+            cursor = conn.cursor()
+            # Fetch all items in the user's cart
+            cursor.execute("SELECT ISBN, Quantity FROM Cart WHERE UserID=?", (userID,))
+            items = cursor.fetchall()
+            if not items:
+                print("Your cart is empty.")
+                return
+
+            # Process each item in the cart
+            for ISBN, quantity in items:
+                # Update inventory
+                cursor.execute("UPDATE Inventory SET Stock = Stock - ? WHERE ISBN = ? AND Stock >= ?", (quantity, ISBN, quantity))
+                if cursor.rowcount == 0:
+                    print(f"Failed to update inventory for ISBN: {ISBN}. Insufficient stock.")
+                    return
+                
+                cursor.execute("DELETE FROM Cart WHERE UserID=?", (userID,))
+            conn.commit()
+            print("Checkout successful. Your cart has been cleared.")
+            cursor.close()
+        except sqlite3.Error as e:
+            print("Failed to check out:", e)
+            sys.exit()
+        finally:
+            conn.close()
